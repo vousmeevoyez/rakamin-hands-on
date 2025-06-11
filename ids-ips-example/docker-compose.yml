@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  suricata:
+    image: jasonish/suricata
+    # For IDS mode, you'd typically monitor a live interface
+    # For processing pcaps, we'll bind mount the pcaps directory
+    volumes:
+      - ./suricata.yaml:/etc/suricata/suricata.yaml:ro
+      - ./rules:/etc/suricata/rules:ro
+      - ./pcaps:/var/lib/suricata/pcaps:ro # Mount PCAP directory
+      - ./logs:/var/log/suricata # For Suricata logs (eve.json, fast.log, etc.)
+    command: suricata -c /etc/suricata/suricata.yaml -r /var/lib/suricata/pcaps/sample.pcap -l /var/log/suricata # Process a specific PCAP file
+    # For live monitoring (IDS/IPS), you'd use network_mode: "host" or bridge specific interfaces
+    # network_mode: "host" # Uncomment for live network monitoring (requires host network access)
+    cap_add:
+      - NET_ADMIN # Required for IPS capabilities and certain capture methods
+      - NET_RAW # Required for raw socket access for packet capture
