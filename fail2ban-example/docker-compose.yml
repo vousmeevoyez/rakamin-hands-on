@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx/html:/usr/share/nginx/html
+      - nginx-logs:/var/log/nginx
+    ports:
+      - "8080:80"
+
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    container_name: fail2ban
+    cap_add:
+      - NET_ADMIN
+    network_mode: host # Fail2ban needs to interact with the host's iptables
+    volumes:
+      - ./fail2ban/jail.d:/etc/fail2ban/jail.d:ro
+      - ./fail2ban/filter.d:/etc/fail2ban/filter.d:ro
+      - fail2ban-db:/data
+      - nginx-logs:/var/log/nginx:ro # Make sure Fail2ban can read Nginx logs
+
+volumes:
+  nginx-logs:
+  fail2ban-db:
+
+networks:
+  default: # Explicitly define the default bridge network for clarity
